@@ -1,8 +1,11 @@
-import React, { useState } from "react";
+import axios from "axios";
+import React, { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { UserDataContext } from "../context/UserContext";
 
 const UserLogin = () => {
   const navigate = useNavigate();
+  const { setUser } = useContext(UserDataContext);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -10,9 +13,28 @@ const UserLogin = () => {
 
   const handleForm = async (e) => {
     e.preventDefault();
-    console.log(formData);
     try {
-    } catch (error) {}
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/api/users/login`,
+        formData,
+        { withCredentials: true },
+      );
+      setUser(response.data.user);
+      localStorage.setItem("token", response.data.token);
+      console.log(response.data);
+      setFormData({
+        email: "",
+        password: "",
+      });
+      navigate("/home");
+    } catch (error) {
+      setFormData({
+        email: "",
+        password: "",
+      });
+      console.error("Error:", error.response?.data || error.message);
+      alert(error.response?.data?.message || "Something went wrong");
+    }
   };
 
   return (
@@ -30,8 +52,7 @@ const UserLogin = () => {
           onSubmit={handleForm}
           className="flex flex-col justify-center h-full"
         >
-            <h2 className="text-2xl font-bold mb-2">User Login</h2>
-        
+          <h2 className="text-2xl font-bold mb-2">User Login</h2>
 
           <label className="text-sm font-medium mb-2">What's your email</label>
           <input
@@ -93,5 +114,3 @@ const UserLogin = () => {
 };
 
 export default UserLogin;
-
-

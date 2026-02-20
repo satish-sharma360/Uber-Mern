@@ -1,8 +1,12 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { UserDataContext } from "../context/UserContext";
 
 const UserSignup = () => {
   const navigate = useNavigate();
+  const { user, setUser } = useContext(UserDataContext);
+
   const [formData, setFormData] = useState({
     fullname: {
       firstName: "",
@@ -12,10 +16,29 @@ const UserSignup = () => {
     password: "",
   });
 
-  const handleSubmit = (e) =>{
-    e.preventDefault()
-    console.log(formData)
-  }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/api/users/signin`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        },
+      );
+
+      navigate("/home");
+      setUser(response.data);
+      localStorage.setItem('token' , response.data.token)
+      console.log(response.data);
+    } catch (error) {
+      console.error("Error:", error.response?.data || error.message);
+      alert(error.response?.data?.message || "Something went wrong");
+    }
+  };
   return (
     <div className="min-h-screen bg-gray-200 flex items-center justify-center">
       <div className="w-full max-w-[375px] bg-white min-h-screen sm:min-h-[650px] sm:rounded-xl sm:shadow-xl p-6">
